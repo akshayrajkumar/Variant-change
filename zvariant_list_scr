@@ -1,0 +1,160 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZVARIANT_LIST_SCR
+*&---------------------------------------------------------------------*
+
+*&---------------------------------------------------------------------*
+*&  Include           ZVARIANT_LIST_SCR
+*&---------------------------------------------------------------------*\
+TYPE-POOLS abap.
+TABLES varid.
+TYPES:  tt_rsparams TYPE STANDARD TABLE OF rsparams WITH DEFAULT KEY.
+DATA gt_params   TYPE tt_rsparams.
+TYPES:  BEGIN OF ty_eos_map,
+          field     TYPE char20,
+          old_value TYPE char40,
+          new_value TYPE char40,
+        END OF ty_eos_map,
+        tt_eos_map TYPE HASHED TABLE OF ty_eos_map WITH UNIQUE KEY field old_value.
+
+TYPES:
+  BEGIN OF ty_eos_change_out,
+    program_name    TYPE varid-report,
+    variant_name    TYPE varid-variant,
+    variant_text    TYPE varit-vtext,
+    selection_field TYPE rsparams-selname,
+    selection_kind  TYPE rsparams-kind,
+    sign            TYPE rsparams-sign,
+    option          TYPE rsparams-option,
+    old_low         TYPE rsparams-low,
+    new_low         TYPE rsparams-low,
+    old_high        TYPE rsparams-high,
+    new_high        TYPE rsparams-high,
+    changed_ind     TYPE abap_bool,
+    message         TYPE string,
+  END OF ty_eos_change_out,
+  tt_eos_change_out TYPE STANDARD TABLE OF ty_eos_change_out WITH DEFAULT KEY.
+
+TYPES:
+  BEGIN OF ty_variant_save,
+    report  TYPE varid-report,
+    variant TYPE varid-variant,
+    params  TYPE tt_rsparams,
+  END OF ty_variant_save,
+  tt_variant_save TYPE STANDARD TABLE OF ty_variant_save WITH DEFAULT KEY.
+
+TYPES:
+  BEGIN OF ty_variant_hdr,
+    report  TYPE varid-report,
+    variant TYPE varid-variant,
+    ename   TYPE varid-ename,
+    edat    TYPE varid-edat,
+    vtext   TYPE varit-vtext,
+  END OF ty_variant_hdr,
+  tt_variant_hdr TYPE STANDARD TABLE OF ty_variant_hdr WITH DEFAULT KEY.
+
+TYPES:
+  BEGIN OF ty_meta,
+    selname    TYPE rsparams-selname,
+    rollname   TYPE dd03l-rollname,
+    checktable TYPE dd03l-checktable,
+    fieldname  TYPE dd03l-fieldname,
+    domname    TYPE dd03l-domname,
+  END OF ty_meta,
+  tt_meta TYPE HASHED TABLE OF ty_meta WITH UNIQUE KEY selname.
+
+TYPES:
+  BEGIN OF ty_output,
+    program_name    TYPE varid-report,
+    variant_name    TYPE varid-variant,
+    variant_text    TYPE varit-vtext,
+    selection_field TYPE rsparams-selname,
+    selection_kind  TYPE rsparams-kind,
+    sign            TYPE rsparams-sign,
+    option          TYPE rsparams-option,
+    low_value       TYPE rsparams-low,
+    high_value      TYPE rsparams-high,
+    data_element    TYPE dd03l-rollname,
+    ref_table       TYPE dd03l-checktable,
+    ref_field       TYPE dd03l-fieldname,
+    domain          TYPE dd03l-domname,
+  END OF ty_output,
+  tt_output TYPE STANDARD TABLE OF ty_output WITH DEFAULT KEY.
+
+TYPES: BEGIN OF ty_tvarvc,
+         name      TYPE tvarvc-name,
+         type      TYPE tvarvc-type,
+         numb      TYPE tvarvc-numb,
+         sign      TYPE tvarvc-sign,
+         opti      TYPE tvarvc-opti,
+         low       TYPE tvarvc-low,
+         high      TYPE tvarvc-high,
+         old_val_l TYPE zeos_value_tab-old_value,
+         old_val_h TYPE zeos_value_tab-old_value,
+         updated   TYPE flag,
+       END OF ty_tvarvc.
+TYPES: tt_tvarvc TYPE STANDARD TABLE OF ty_tvarvc.
+
+
+DATA gt_variant_save TYPE tt_variant_save.
+DATA gt_output   TYPE tt_output.
+DATA gv_fn TYPE dd03l-fieldname.
+*---------------------------------------------------------------------*
+* Major block end: Type definitions
+*---------------------------------------------------------------------*
+
+
+SELECTION-SCREEN BEGIN OF BLOCK b0 WITH FRAME TITLE text-r01.
+PARAMETERS: rad1 RADIOBUTTON GROUP rbg DEFAULT 'X' USER-COMMAND rch,
+            rad2 RADIOBUTTON GROUP rbg.
+SELECTION-SCREEN END OF BLOCK b0.
+
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE text-t01.
+PARAMETERS: p_repid TYPE varid-report DEFAULT 'Z*' OBLIGATORY MODIF ID m1.
+SELECT-OPTIONS: s_var   FOR varid-variant MODIF ID m1.
+
+SELECTION-SCREEN BEGIN OF LINE.
+SELECTION-SCREEN COMMENT 1(30) text-002 MODIF ID m1.
+SELECT-OPTIONS: s_field FOR gv_fn MODIF ID m1
+                         NO INTERVALS
+                         DEFAULT '*BUKRS'
+                         OPTION CP
+                         SIGN I
+                         OBLIGATORY.
+SELECTION-SCREEN COMMENT 65(25) text-001 MODIF ID m1.
+SELECTION-SCREEN END OF LINE.
+
+PARAMETERS: p_eos TYPE abap_bool AS CHECKBOX DEFAULT abap_true  MODIF ID m1,
+            p_xls TYPE abap_bool AS CHECKBOX DEFAULT abap_false MODIF ID m1,
+            p_max TYPE i DEFAULT 50000                          MODIF ID m1.
+SELECTION-SCREEN END OF BLOCK b1.
+
+SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE text-t02.
+PARAMETERS: p_pat  TYPE string LOWER CASE OBLIGATORY DEFAULT 'BUKRS' MODIF ID m2,
+            p_test AS CHECKBOX DEFAULT 'X'                           MODIF ID m2.
+SELECTION-SCREEN END OF BLOCK b2.
+
+AT SELECTION-SCREEN OUTPUT.
+  LOOP AT SCREEN.
+    IF screen-group1 = 'XLS'.
+      screen-active = 0.
+      MODIFY SCREEN.
+    ENDIF.
+
+    CASE screen-group1.
+      WHEN 'M1'.
+        IF rad1 = abap_true.
+          screen-active = 1.
+        ELSE.
+          screen-active = 0.
+        ENDIF.
+        MODIFY SCREEN.
+
+      WHEN 'M2'.
+        IF rad2 = abap_true.
+          screen-active = 1.
+        ELSE.
+          screen-active = 0.
+        ENDIF.
+        MODIFY SCREEN.
+    ENDCASE.
+  ENDLOOP.
