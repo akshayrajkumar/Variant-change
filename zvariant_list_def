@@ -1,0 +1,86 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZVARIANT_LIST_DEF
+*&---------------------------------------------------------------------*
+*---------------------------------------------------------------------*
+* Major block start: Class definitions
+*---------------------------------------------------------------------*
+CLASS lcl_repo DEFINITION FINAL.
+  PUBLIC SECTION.
+    METHODS get_variants
+      IMPORTING iv_report          TYPE varid-report
+      RETURNING VALUE(rt_variants) TYPE tt_variant_hdr.
+
+    METHODS get_variant_contents
+      IMPORTING iv_report  TYPE varid-report
+                iv_variant TYPE varid-variant
+      EXPORTING et_params  TYPE tt_rsparams.
+
+    METHODS get_metadata
+      IMPORTING iv_selname     TYPE rsparams-selname
+      CHANGING  ct_cache       TYPE tt_meta
+      RETURNING VALUE(rs_meta) TYPE ty_meta.
+ENDCLASS.
+
+CLASS lcl_eos_mapper DEFINITION FINAL.
+  PUBLIC SECTION.
+    METHODS load_mapping
+      RETURNING VALUE(rt_map) TYPE tt_eos_map.
+
+    METHODS process_variant_contents
+      IMPORTING
+        iv_report         TYPE varid-report
+        iv_variant        TYPE varid-variant
+        iv_variant_text   TYPE varit-vtext
+        it_params         TYPE tt_rsparams
+        it_map            TYPE tt_eos_map
+      EXPORTING
+        et_changed_params TYPE tt_rsparams
+        et_change_output  TYPE tt_eos_change_out.
+
+  PRIVATE SECTION.
+    METHODS is_check_field
+      IMPORTING iv_selname  TYPE rsparams-selname
+      CHANGING  cv_flag     TYPE abap_bool
+                cv_fieldnam TYPE char30.
+ENDCLASS.
+
+CLASS lcl_alv DEFINITION FINAL.
+  PUBLIC SECTION.
+    METHODS display
+      IMPORTING it_output TYPE tt_output.
+
+    METHODS display_tvarvc
+      IMPORTING iv_header TYPE lvc_title
+                it_output TYPE tt_tvarvc.
+
+    METHODS display_change_output
+      IMPORTING it_output TYPE tt_eos_change_out.
+
+    METHODS download_tsv
+      IMPORTING it_output TYPE tt_output.
+
+    METHODS save_variant_changes
+      IMPORTING iv_report  TYPE varid-report
+                iv_variant TYPE varid-variant
+                it_params  TYPE tt_rsparams.
+
+  PRIVATE SECTION.
+    DATA mo_alv    TYPE REF TO cl_salv_table.
+    DATA mo_events TYPE REF TO cl_salv_events_table.
+
+    METHODS on_added_function
+                  FOR EVENT added_function OF cl_salv_events_table
+      IMPORTING e_salv_function.
+
+*    METHODS handle_toolbar FOR EVENT toolbar OF cl_gui_alv_grid
+*        IMPORTING e_object e_interactive,
+*      handle_user_command FOR EVENT user_command OF cl_gui_alv_grid
+*        IMPORTING e_ucomm.
+ENDCLASS.
+
+
+CLASS lcl_app DEFINITION FINAL.
+  PUBLIC SECTION.
+    METHODS run.
+    METHODS run_tvarvc.
+ENDCLASS.
