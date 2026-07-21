@@ -7,7 +7,7 @@
 CLASS lcl_repo DEFINITION FINAL.
   PUBLIC SECTION.
     METHODS get_variants
-      IMPORTING iv_report          TYPE varid-report
+       "IMPORTING iv_report          TYPE varid-report
       RETURNING VALUE(rt_variants) TYPE tt_variant_hdr.
 
     METHODS get_variant_contents
