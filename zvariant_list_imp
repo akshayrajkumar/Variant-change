@@ -468,7 +468,20 @@ CLASS lcl_app IMPLEMENTATION.
     lo_alv          = NEW lcl_alv( ).
     lo_eos_mapper   = NEW lcl_eos_mapper( ).
 
+      SELECT *
+      FROM zfieldcombi
+      INTO TABLE gt_fieldcombi
+      WHERE field IN s_field.
+    
+IF gt_fieldcombi IS NOT INITIAL.
+      LOOP AT gt_fieldcombi INTO DATA(ls_combi).
+        ls_field_wa-sign   = 'I'.
+        ls_field_wa-option = 'CP'.
+        ls_field_wa-low    = |*{ ls_combi-field_alias }|.
 
+        APPEND ls_field_wa TO s_field.
+      ENDLOOP.
+    ENDIF.
     IF p_eos = abap_true.
       lt_eos_map = lo_eos_mapper->load_mapping( ).
     ENDIF.
