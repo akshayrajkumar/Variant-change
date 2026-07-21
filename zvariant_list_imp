@@ -486,7 +486,8 @@ IF gt_fieldcombi IS NOT INITIAL.
       lt_eos_map = lo_eos_mapper->load_mapping( ).
     ENDIF.
 
-    lt_variants = lo_repo->get_variants( iv_report = p_repid ).
+   *    lt_variants = lo_repo->get_variants( iv_report = p_repid ).
+    lt_variants = lo_repo->get_variants( ).
 
     LOOP AT lt_variants ASSIGNING FIELD-SYMBOL(<ls_variant>).
       CLEAR: lt_params, lt_changed_params, lt_change_output.
